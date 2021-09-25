@@ -23,9 +23,30 @@ def live_plot(iteration,Loss,Estimated_range,Gt_range ,figsize=(7,5), title=''):
   plt.xlabel('epoch')
   plt.ylabel('Range[m]')
   plt.pause(0.01) 
+  plt.show()
 
-
-
+def my_plotter(fig,ax1,ax2,Iteration_numer=[],estimated_range=[],Ground_truth_range=[],Loss=[]):
+    ax1.clear()
+    ax2.clear()
+    clear_output(wait=True)
+    # plt.figure(figsize=figsize)
+    # ax1.plot(Iteration_numer, estimated_range[3], label='prediction')
+    # ax1.plot(Iteration_numer, Ground_truth_range[3],'--b', label='Ground Truth')
+    # ax1.legend(loc ="lower left")
+    # ax1.legend()
+    # ax1.set_xlabel('iterations')
+    # ax1.set_ylabel('range[m]')
+    # ax1.set_title("Train plotter")
+    ax2.plot(Iteration_numer,Loss)
+    ax2.set_xlabel('iterations')
+    ax2.set_ylabel('Loss value')
+    # ax2.set_title("shares y with main")
+    fig.tight_layout()
+    plt.pause(0.1)
+    plt.show()
+plt.ion() # enable interactivity
+fig, (ax1, ax2) = plt.subplots(1,2)
+fig.suptitle('Vertically stacked subplots')
 transform = T.Compose([T.Resize(256), T.CenterCrop(224), T.ToTensor()])
 #aquiring dataset and dataLoader
 
@@ -73,14 +94,15 @@ prediction_list=[]
 ground_truth_list=[]
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-vgg16.eval()
+vgg16.eval().to(device)
 Regression_model.to(device)
+print('start train')
 for epoch in range(num_epochs):
     lucky_flight_id = random.choice(flight_ids)
     dataset = CustomImageDataset(annotations_file=annotations_file_path, img_dir=img_dir,
                              flight_id=lucky_flight_id,transform=transform,Pretrained=True)
     data_loader = DataLoader(dataset, batch_size=4, shuffle=False,drop_last=True)
-    print(epoch)
+    print('epoch number',epoch)
     
     for images, Range,is_above_Horizon,bounding_box in data_loader:
         features=vgg16(images.to(device).float())
@@ -91,12 +113,15 @@ for epoch in range(num_epochs):
         loss1 = criterion(outputs.squeeze().to(device),(Range.squeeze().to(device)).float())   
         loss=loss1   
         y1_data.append(loss.item())
-        prediction_list.append(outputs.squeeze())
-        ground_truth_list.append(Range.squeeze())
+        prediction_list.append(outputs.squeeze().detach().cpu().numpy())
+        ground_truth_list.append(Range.squeeze().detach().cpu().numpy())
 
         loss.backward()
         optimizer.step()
-        if epoch % 10 == 0 and epoch>0 :
-            Regression_model.save_model(Regression_model)
-            live_plot(iteration,y1_data,prediction_list,ground_truth_list)
-            print('accuracy range %',(np.abs(outputs.squeeze().item()-Range.squeeze().item())/Range.squeeze().item())*100) 
+        my_plotter(fig, ax1, ax2, Iteration_numer=iteration, estimated_range=prediction_list,
+                   Ground_truth_range=ground_truth_list, Loss=y1_data)
+    if epoch % 5 == 1 and epoch>0 :
+        Regression_model.save_model(Regression_model)
+        # live_plot(iteration,y1_data,prediction_list,ground_truth_list)
+
+        # print('accuracy range %',(np.abs(outputs.squeeze().item()-Range.squeeze().item())/Range.squeeze().item())*100)
