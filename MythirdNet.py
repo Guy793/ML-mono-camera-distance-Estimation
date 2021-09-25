@@ -1,7 +1,8 @@
 import torchvision.models as models
-vgg16 = models.vgg16(pretrained=True)
+from torchvision import datasets, transforms as T
+
 transform = T.Compose([T.Resize(256), T.CenterCrop(224), T.ToTensor()])
-vgg16.eval()
+
 import torch
 import torch.nn as nn
 from torch.autograd import Variable

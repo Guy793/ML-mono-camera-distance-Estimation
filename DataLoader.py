@@ -1,38 +1,24 @@
-import os
+
 import pandas as pd
-import math
-from torch.utils.data import Dataset
-import cv2
+
 import glob
 import cv2
-import numpy as np
-import torch
-from PIL import Image
-import matplotlib.pyplot as plt
-from torch.utils.data import Dataset, DataLoader
-import os
-import matplotlib.patches as patches
+
 from torch.utils.data import DataLoader, Dataset
-import torchvision.transforms as T
+
 import torch
-import torch.nn as nn
+
 from torchvision.utils import make_grid
-from torchvision.utils import save_image
+
 from IPython.display import Image
-import matplotlib.pyplot as plt
-import numpy as np
-import random
-from google.colab.patches import cv2_imshow
 import json
 import random
-import os, sys
-from IPython.display import display, clear_output, HTML
-from random import randrange, choice
+import os
 import matplotlib.pyplot as plt
 from PIL import Image
 import numpy as np
-import seaborn as sns
-os.environ['KMP_DUPLICATE_LIB_OK'] = 'True'
+
+# os.environ['KMP_DUPLICATE_LIB_OK'] = 'True'
 class CustomImageDataset(Dataset):
     def __init__(self, annotations_file,img_dir, transform=None, target_transform=None,flight_id='0001ba865c8e410e88609541b8f55ffc',Pretrained=False):
         self.Pretrained=Pretrained
@@ -144,9 +130,10 @@ def show_images(images, nmax=64):
     plt.show()    
 def check_available_flights(img_dir):
     flight_list = glob.glob(img_dir)
+    print(flight_list)
     flight_id_exist=[]
     for flight_id in flight_list:
-        flight_id_exist.append(flight_id.rsplit('/',1)[1])
+        flight_id_exist.append(flight_id.rsplit('\\',1)[1])
     return flight_id_exist
     
     
@@ -154,19 +141,14 @@ if __name__ == "__main__":
     #This script contains an example of how to load and use data loader with the following format
     #label is [range,is_above_Horizon]
     #notice the training data contains only detected object data
-    
-    annotations_file_path=r'C:\Users\shali\part1\ImageSets\groundtruth.json'
-    img_dir=r'C:\Users\shali\part1\Images\'
-    flight_dir=r'C:\Users\shali\part1\Images\*'
-    
-    
+    annotations_file_path=r'C:\Users\Study\Desktop\airborne-detection-starter-kit\data\part1\ImageSets\groundtruth.json'
+    img_dir= r'C:\Users\Study\Desktop\airborne-detection-starter-kit\data\part1\Images\\'
+    flight_dir=r'C:\Users\Study\Desktop\airborne-detection-starter-kit\data\part1\Images\*'
     flight_ids=check_available_flights(flight_dir)
     print(flight_ids)
     lucky_flight_id = random.choice(flight_ids)
     lucky_flight_id=flight_ids[0]
     print('chosen flight id',lucky_flight_id)
-    
-
     # #simple exmple about using dataset
     dataset=CustomImageDataset(annotations_file=annotations_file_path,img_dir=img_dir,flight_id=lucky_flight_id)
     data_loader = DataLoader(dataset,batch_size=10,shuffle=False)

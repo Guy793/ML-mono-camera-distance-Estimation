@@ -1,17 +1,13 @@
-import tensorflow as tf
+
 import numpy as np
 import matplotlib.pyplot as plt
-import pandas as pd
-import torch
-import torch.nn as nn
-from torch.autograd import Variable
-from sklearn.preprocessing import MinMaxScaler
-import torch
-from torch.utils.tensorboard import SummaryWriter
-from tensorflow import summary
+from DataLoader import *
 import torch
 from torchvision import datasets, transforms as T
 from MythirdNet import LSTM_4th
+from IPython.display import clear_output
+import torchvision.models as models
+
 def live_plot(iteration,Loss,Estimated_range,Gt_range ,figsize=(7,5), title=''):
   clear_output(wait=True)
   plt.subplot(2, 2, 1)
@@ -33,11 +29,14 @@ def live_plot(iteration,Loss,Estimated_range,Gt_range ,figsize=(7,5), title=''):
 transform = T.Compose([T.Resize(256), T.CenterCrop(224), T.ToTensor()])
 #aquiring dataset and dataLoader
 
+annotations_file_path = r'C:\Users\Study\Desktop\airborne-detection-starter-kit\data\part1\ImageSets\groundtruth.json'
+img_dir = r'C:\Users\Study\Desktop\airborne-detection-starter-kit\data\part1\Images\\'
+flight_dir = r'C:\Users\Study\Desktop\airborne-detection-starter-kit\data\part1\Images\*'
+
+#if using shali computer
 annotations_file_path=r'C:\Users\shali\part1\ImageSets\groundtruth.json'
-img_dir=r'C:\Users\shali\part1\Images\'
+img_dir=r'C:\Users\shali\part1\Images\\'
 flight_dir=r'C:\Users\shali\part1\Images\*'
-
-
 
 flight_ids=check_available_flights(flight_dir)
 print(flight_ids)
@@ -48,7 +47,8 @@ dataset = CustomImageDataset(annotations_file=annotations_file_path, img_dir=img
                              flight_id=lucky_flight_id,transform=transform)
 
 
-
+vgg16 = models.vgg16(pretrained=True)
+vgg16.eval()
 #define network parameters
 num_epochs = 2000
 learning_rate = 0.001
