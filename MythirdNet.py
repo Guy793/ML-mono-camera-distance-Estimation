@@ -34,4 +34,4 @@ class LSTM_4th(nn.Module):
     def load_model(self, model, path='Distance_Estimator'):
         model.load_state_dict(torch.load(path))
         print('model have been load successfully')
-        # model.eval()
+        model.eval()
