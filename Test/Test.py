@@ -13,7 +13,7 @@ from Network_Architecture.My5thNet import *
 import argparse
 
 writer = SummaryWriter()
-args = Build_parser(guy_computer=True)
+args,ap = Build_parser(guy_computer=True)
 annotations_file_path = args.annotations_file_path
 img_dir = args.img_dir
 flight_dir = args.flight_dir
@@ -27,6 +27,8 @@ lucky_flight_id = random.choice(flight_ids)
 dataset = CustomImageDataset(annotations_file=annotations_file_path, img_dir=img_dir,
                              flight_id=lucky_flight_id,transform=transform)
 
+vgg16 = models.vgg16(pretrained=True)
+vgg16.eval()
 #define network parameters
 num_epochs = 2000
 learning_rate = 0.001
@@ -38,8 +40,8 @@ num_classes = 1
 #choose regression model
 
 
-Regression_model=Net_5()
-Regression_model.load_state_dict(torch.load('distance_estimatr_nt6',map_location=torch.device('cpu')))
+Regression_model=LSTM_4th()
+Regression_model.load_state_dict(torch.load(r'C:\Users\Study\Desktop\ML-mono-camera-distance-Estimation\model_wights\Distance_Estimator_26_09',map_location=torch.device('cpu')))
 
 Regression_model.eval()
 
@@ -58,21 +60,22 @@ print('start test')
 for epoch in range(num_epochs):
     lucky_flight_id = random.choice(flight_ids)
     dataset = CustomImageDataset(annotations_file=annotations_file_path, img_dir=img_dir,
-                             flight_id=lucky_flight_id,transform=transform,Pretrained=True,Range_labeled_as_image=True)
+                             flight_id=lucky_flight_id,transform=transform,Pretrained=True,Range_labeled_as_image=False)
     data_loader = DataLoader(dataset, batch_size=1, shuffle=False,drop_last=True)
     print('epoch number',epoch)
 
     for images, Range,is_above_Horizon,bounding_box in data_loader:
+        features = vgg16(images.to(device).float())
         iteration.append(iter)
         print('iter',iter)
         iter=iter+1
-        outputs = Regression_model(images.to(device).float())
+        outputs = Regression_model(features)
         # print('output shape',outputs.shape,'range shape',Range.shape)
 
         # writer.add_image('predicted image',outputs.squeeze().detach().numpy(), dataformats='HW')
         # writer.add_image('label image', Range.squeeze(), dataformats='HW')
         # writer.add_image('origin image', images.squeeze(), dataformats='CHW')
 
-
+        print('accuracy',(1-np.abs(outputs.detach().numpy()-Range.detach().numpy())/np.abs(Range.detach().numpy()))*100)
 
         # print('accuracy ran

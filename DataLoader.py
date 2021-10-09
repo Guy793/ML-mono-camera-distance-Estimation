@@ -63,7 +63,7 @@ class CustomImageDataset(Dataset):
          
         else:
           # image = cv2.imread(img_path)
-          image = cv2.resize(image, dim)
+          image = cv2.resize(image, dim).T
 
 
           # image=image.T

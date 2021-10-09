@@ -4,7 +4,7 @@ import cv2
 
 
 
-args=Build_parser()
+args,ap=Build_parser()
 annotations_file_path=args.annotations_file_path
 img_dir=args.img_dir
 flight_dir=args.flight_dir
